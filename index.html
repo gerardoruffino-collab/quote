@@ -123,6 +123,12 @@ dt{color:var(--muted)} dd{margin:0;font-weight:500}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 .offer .btnlink{display:inline-block}
+.qrules{background:var(--tint);border-radius:10px;padding:12px 14px;font-size:13px}
+.qrules ul{margin:6px 0;padding-left:18px}
+.qrules span{font-weight:600}
+.qex{color:var(--muted);font-style:italic;font-size:13px}
+.qnote{color:var(--warn);font-style:italic;font-size:13px}
+.rx{display:inline-block;font-size:11px;font-weight:700;color:#b06a00;background:#fff1d6;border:1px solid #f0c26a;border-radius:4px;padding:0 6px;margin-left:4px;vertical-align:1px}
 </style>
 <script>window.QUOTE_BUILD={hostedBrochures:true};</script>
 <div class="wrap">
@@ -259,7 +265,7 @@ en:{st1:'1 · About you',st2:'2 · Health questions',st3:'3 · Submit',st4:'4 ·
  depsH:'Who else needs coverage?',depsP:'Add your spouse and any children. Leave this empty if it’s just you.',addSpouse:'+ Add spouse',addChild:'+ Add child',cont1:'Continue to health questions',
  depName_Spouse:'Spouse name',depName_Child:'Child name',depRel:'Relationship',rel_Spouse:'Spouse',rel_Child:'Child',remove:'Remove',
  err1:'Please fill in your name, date of birth, a valid email, a 10-digit phone number, a 5-digit zip and state, plus a name and birth date for everyone you added.',err18:'The primary applicant must be at least 18.',
- hqH:'Health questions',hqLead:'Answer for <b>everyone</b> applying. If any answer is yes for anyone, choose Yes. Your answers decide which plans you qualify for.',
+ hqH:'Health questions',hqLead:'Answer for yourself and every family member joining the plan. If any answer is yes for anyone, choose Yes. Your answers decide which plans you qualify for.',rulesH:'3 quick rules before you start',rulesParts:'Part A = right now or next 12 months. Part C = past 5 years or ongoing.',rxTip:'The medicine alone is enough to check Yes',
  draft:'Draft questions shown for setup. They will be replaced with the carrier’s Part A, B and C wording.',part:'Part',yes:'Yes',no:'No',back:'Back',reviewBtn:'Review and submit',err2:'Please answer every question with Yes or No.',
  subH:'Submit your answers',
  subLeadMail:'Check your information below, then tap <b>Submit my answers</b>. Your email app opens with everything filled in to {name}. Press <b>Send</b> there, then come back here to see your offer.',
@@ -295,7 +301,7 @@ es:{st1:'1 · Sus datos',st2:'2 · Preguntas de salud',st3:'3 · Enviar',st4:'4 
  depsH:'¿Quién más necesita cobertura?',depsP:'Agregue a su cónyuge y a sus hijos. Déjelo vacío si es solo para usted.',addSpouse:'+ Agregar cónyuge',addChild:'+ Agregar hijo(a)',cont1:'Continuar a las preguntas de salud',
  depName_Spouse:'Nombre del cónyuge',depName_Child:'Nombre del hijo(a)',depRel:'Parentesco',rel_Spouse:'Cónyuge',rel_Child:'Hijo(a)',remove:'Quitar',
  err1:'Complete su nombre, fecha de nacimiento, un correo válido, un teléfono de 10 dígitos, un código postal de 5 dígitos y el estado, además del nombre y la fecha de nacimiento de cada persona que agregó.',err18:'El solicitante principal debe tener al menos 18 años.',
- hqH:'Preguntas de salud',hqLead:'Responda por <b>todas</b> las personas que solicitan. Si la respuesta es sí para cualquiera, elija Sí. Sus respuestas determinan para qué planes califica.',
+ hqH:'Preguntas de salud',hqLead:'Responda por usted y por cada familiar que se una al plan. Si la respuesta es sí para cualquiera, elija Sí. Sus respuestas determinan para qué planes califica.',rulesH:'3 reglas rápidas antes de empezar',rulesParts:'Parte A = ahora mismo o en los próximos 12 meses. Parte C = últimos 5 años o en curso.',rxTip:'El medicamento por sí solo basta para marcar Sí',
  draft:'Preguntas de muestra para la configuración. Se reemplazarán con el texto oficial de las Partes A, B y C de la aseguradora.',part:'Parte',yes:'Sí',no:'No',back:'Atrás',reviewBtn:'Revisar y enviar',err2:'Responda cada pregunta con Sí o No.',
  subH:'Envíe sus respuestas',
  subLeadMail:'Revise su información y toque <b>Enviar mis respuestas</b>. Se abrirá su aplicación de correo con todo listo para {name}. Presione <b>Enviar</b> allí y luego regrese aquí para ver su oferta.',
@@ -328,19 +334,52 @@ const VARS=()=>({first:esc(FIRST),name:esc(CFG.name),email:esc(AGENT_EMAIL)});
 function t(k,v,L){const d=T[L||LANG];let s=d[k]!==undefined?d[k]:T.en[k];if(typeof s!=='string')return s;const all=Object.assign(VARS(),v||{});return s.replace(/\{(\w+)\}/g,(_,x)=>all[x]!==undefined?all[x]:'')}
 const L2=(en,es)=>LANG==='es'?es:en;   // inline pair helper for plan data
 
-/* ===== Health questions: replace with carrier Part A, B, C wording ===== */
-const DRAFT_QUESTIONS=true;
+/* ===== Health questions: Bright Life Health History Disclosure Form (9.14.26), Parts A, B and C as written ===== */
+/* Each question: t = bold title, d = description, ex = examples, note = small note, rx = orange Rx tag. [English, Spanish] */
+const DRAFT_QUESTIONS=false;
+const Q_RULES=[
+ ['Check Yes if you have the condition OR take a listed medicine — either one counts.','Marque Sí si tiene la condición O toma uno de los medicamentos indicados; cualquiera de los dos cuenta.'],
+ ['Brand names are just examples — a similar drug for the same purpose still counts.','Los nombres de marca son solo ejemplos; un medicamento similar para el mismo fin también cuenta.'],
+ ['An orange Rx tag means the medicine alone is enough to check Yes, even with no diagnosis.','La etiqueta naranja Rx significa que el medicamento por sí solo basta para marcar Sí, aunque no tenga un diagnóstico.']
+];
 const PARTS=[
- {id:'A',title:['Major medical history','Historial médico importante'],qs:[
-   ['In the past 5 years, has anyone been diagnosed with or treated for cancer, heart disease, heart attack or stroke?','En los últimos 5 años, ¿alguien ha sido diagnosticado o tratado por cáncer, enfermedad cardíaca, ataque al corazón o derrame cerebral?'],
-   ['Has anyone ever had kidney failure, dialysis, an organ transplant, or been diagnosed with HIV/AIDS?','¿Alguien ha tenido alguna vez insuficiencia renal, diálisis, un trasplante de órgano, o ha sido diagnosticado con VIH/SIDA?'],
-   ['Has anyone been diagnosed with or treated for diabetes requiring insulin, COPD, liver disease or a neurological disorder such as MS or ALS?','¿Alguien ha sido diagnosticado o tratado por diabetes que requiere insulina, EPOC, enfermedad del hígado o un trastorno neurológico como esclerosis múltiple o ELA?']]},
- {id:'B',title:['Current care','Atención actual'],qs:[
-   ['Is anyone currently pregnant, or has a doctor recommended surgery, hospitalization or further testing that has not been completed?','¿Alguien está embarazada actualmente, o un médico ha recomendado una cirugía, hospitalización o más pruebas que aún no se han completado?'],
-   ['In the past 12 months, has anyone been hospitalized overnight or visited the emergency room more than once?','En los últimos 12 meses, ¿alguien ha sido hospitalizado durante la noche o ha ido a la sala de emergencias más de una vez?']]},
- {id:'C',title:['Medications and treatment','Medicamentos y tratamiento'],qs:[
-   ['Is anyone currently taking a specialty or injectable medication (for example biologics, chemotherapy or GLP-1)?','¿Alguien está tomando actualmente un medicamento especializado o inyectable (por ejemplo, biológicos, quimioterapia o GLP-1)?'],
-   ['In the past 2 years, has anyone received inpatient treatment for mental health, alcohol or drug use?','En los últimos 2 años, ¿alguien ha recibido tratamiento hospitalario por salud mental, alcohol o drogas?']]}
+ {id:'A',title:['Current or Upcoming Treatment','Tratamiento actual o próximo'],sub:['Right now, or expected in the next 12 months.','Ahora mismo, o previsto en los próximos 12 meses.'],qs:[
+  {t:['Organ failure or transplant.','Insuficiencia de órganos o trasplante.'],d:['You need, or may soon need, an organ or bone marrow transplant.','Necesita, o pronto podría necesitar, un trasplante de órgano o de médula ósea.']},
+  {t:['Waiting for a transplant.','En espera de un trasplante.'],d:["You're on a transplant waiting list, or being tested to get on one.",'Está en una lista de espera para un trasplante, o le están haciendo pruebas para entrar en una.']},
+  {t:['Gene or cell therapy.','Terapia génica o celular.'],d:["You're treated with gene or cell therapy for an inherited condition.",'Recibe terapia génica o celular para una condición hereditaria.'],rx:1},
+  {t:['Cancer treatment (Excluding Basal Skin Cell Cancer).','Tratamiento contra el cáncer (excepto cáncer de piel de células basales).'],d:["You're getting chemo, radiation, or other cancer treatment — including cancer pills taken at home, or pills taken to keep cancer from coming back.",'Recibe quimioterapia, radiación u otro tratamiento contra el cáncer, incluidas pastillas contra el cáncer que toma en casa o pastillas para evitar que el cáncer regrese.'],ex:['Examples: Xeloda, Ibrance, tamoxifen.','Ejemplos: Xeloda, Ibrance, tamoxifeno.'],rx:1},
+  {t:['Kidney failure.','Insuficiencia renal.'],d:["You're on dialysis, or have advanced (Stage 4–5) kidney disease.",'Está en diálisis o tiene enfermedad renal avanzada (etapa 4–5).']},
+  {t:['Lifelong bleeding disorder.','Trastorno de sangrado de por vida.'],d:["You have hemophilia or a bleeding/clotting disorder you've had since birth.",'Tiene hemofilia o un trastorno de sangrado o coagulación que ha tenido desde el nacimiento.'],rx:1},
+  {t:['Biologic or specialty medication.','Medicamento biológico o especializado.'],d:['You take an injected, infused, or specialty drug for any condition — or a medicine that suppresses your immune system.','Toma un medicamento inyectado, en infusión o especializado para cualquier condición, o un medicamento que suprime su sistema inmunológico.'],ex:['Examples: Humira, Dupixent, Stelara.','Ejemplos: Humira, Dupixent, Stelara.'],rx:1},
+  {t:['Inpatient mental health / substance use care.','Atención hospitalaria por salud mental o consumo de sustancias.'],d:['You had a hospital stay, residential stay, or day program (Intensive Out Patient/Partial Hospitalization Program) for this.','Tuvo una estancia en el hospital, una estancia residencial o un programa de día (programa ambulatorio intensivo / de hospitalización parcial) por este motivo.']},
+  {t:['High blood pressure in the lungs.','Presión arterial alta en los pulmones.'],d:["You're treated for this, including medicine given by a continuous pump.",'Recibe tratamiento para esto, incluido medicamento administrado con una bomba continua.'],ex:['Examples: Opsumit, Tyvaso.','Ejemplos: Opsumit, Tyvaso.'],rx:1},
+  {t:['Rare condition treatment.','Tratamiento de una condición rara.'],d:['You get regular infusions or medicine for a rare or inherited disease.','Recibe infusiones o medicamentos regulares para una enfermedad rara o hereditaria.'],ex:['Examples: Soliris, Cerezyme.','Ejemplos: Soliris, Cerezyme.'],rx:1}
+ ]},
+ {id:'B',title:['Pregnancy and Fertility','Embarazo y fertilidad'],sub:['For you, or anyone joining the plan, right now or currently underway within the next 12 months.','Para usted o cualquier persona que se una al plan, ahora mismo o en curso dentro de los próximos 12 meses.'],qs:[
+  {t:['Currently pregnant','Embarazo actual']},
+  {t:["Expecting a child through a partner's pregnancy, surrogacy, or adoption",'Espera un hijo por el embarazo de su pareja, gestación subrogada o adopción']},
+  {t:['Getting fertility treatment to become pregnant','Recibe tratamiento de fertilidad para lograr un embarazo']}
+ ]},
+ {id:'C',title:['Past 5 Years or Ongoing','Últimos 5 años o en curso'],sub:['Diagnosed, treated, or hospitalized in the last 5 years — or still ongoing.','Diagnosticado, tratado u hospitalizado en los últimos 5 años, o que aún continúa.'],qs:[
+  {t:['Cancer.','Cáncer.'],d:['Any cancer(excluding Basal Cell Skin Cancer) — including pills taken by mouth, or medicine to keep it from returning.','Cualquier cáncer (excepto cáncer de piel de células basales), incluidas pastillas por vía oral o medicamentos para evitar que regrese.'],ex:['Examples: tamoxifen, letrozole.','Ejemplos: tamoxifeno, letrozol.'],rx:1},
+  {t:['Heart or blood vessel condition.','Condición del corazón o de los vasos sanguíneos.'],d:['Heart attack, bypass, heart failure, stroke, irregular heartbeat, valve abnormalities (TAVR, Mitral Valve Clips), Watchman (LAAO/LAAC), a pacemaker or heart pump, blood thinners, or 3+ heart medications together.','Ataque al corazón, bypass, insuficiencia cardíaca, derrame cerebral, latido irregular, anomalías de las válvulas (TAVR, clips de válvula mitral), Watchman (LAAO/LAAC), marcapasos o bomba cardíaca, anticoagulantes, o 3 o más medicamentos para el corazón a la vez.'],ex:['Examples: Eliquis, Entresto, Xarelto, Lisinopril, Amlodipine, Lasix or similar.','Ejemplos: Eliquis, Entresto, Xarelto, Lisinopril, Amlodipino, Lasix o similares.'],rx:1},
+  {t:['Homebound or needs daily help.','Confinado en casa o necesita ayuda diaria.'],d:["A condition that limits bathing, dressing, or feeding — or you're in hospice/palliative care.",'Una condición que limita bañarse, vestirse o alimentarse, o está en cuidados de hospicio o paliativos.']},
+  {t:['Autoimmune condition.','Condición autoinmune.'],d:['Your immune system attacks your own body — or you take immune-suppressing medicine or steroids for 3+ months.','Su sistema inmunológico ataca su propio cuerpo, o toma medicamentos inmunosupresores o esteroides por 3 meses o más.'],ex:["Examples: lupus, MS, Crohn's, methotrexate.",'Ejemplos: lupus, esclerosis múltiple, enfermedad de Crohn, metotrexato.'],rx:1},
+  {t:['Blood or immune disorder.','Trastorno de la sangre o del sistema inmunológico.'],d:['Sickle cell, hemophilia, aplastic anemia, HIV, or medicine for any of these.','Anemia de células falciformes, hemofilia, anemia aplásica, VIH, o medicamentos para cualquiera de estos.'],ex:['Examples: Biktarvy, hydroxyurea.','Ejemplos: Biktarvy, hidroxiurea.']},
+  {t:['Organ failure or past transplant.','Insuficiencia de órganos o trasplante previo.'],d:['A past kidney, liver, lung, or heart transplant, or anti-rejection medicine.','Un trasplante previo de riñón, hígado, pulmón o corazón, o medicamentos contra el rechazo.'],ex:['Examples: tacrolimus.','Ejemplos: tacrolimus.'],rx:1},
+  {t:['Ongoing organ support.','Soporte orgánico continuo.'],d:["You're on dialysis, ECMO, or an implanted heart pump.",'Está en diálisis, ECMO o tiene una bomba cardíaca implantada.']},
+  {t:['Recent hospital stay.','Hospitalización reciente.'],d:['A hospital stay in the last 5 years with ongoing care, including for mental health, substance use, or sepsis for the applicant, spouse, child, or any other dependent.','Una estancia en el hospital en los últimos 5 años con atención continua, incluso por salud mental, consumo de sustancias o sepsis, del solicitante, cónyuge, hijo o cualquier otro dependiente.']},
+  {t:['Chronic lung disease.','Enfermedad pulmonar crónica.'],d:['COPD, cystic fibrosis, or similar — or a triple inhaler / biologic asthma shot.','EPOC, fibrosis quística o similar, o un inhalador triple / inyección biológica para el asma.'],ex:['Examples: Trelegy, Dupixent.','Ejemplos: Trelegy, Dupixent.'],note:["Regular asthma inhalers alone don't count.",'Los inhaladores regulares para el asma por sí solos no cuentan.'],rx:1},
+  {t:['Chronic liver disease.','Enfermedad hepática crónica.'],d:['Cirrhosis, hepatitis B/C, or fatty liver disease with scarring.','Cirrosis, hepatitis B/C, o hígado graso con cicatrización.']},
+  {t:['Ongoing chronic pain, bone, joint, or muscle condition.','Dolor crónico continuo o condición de huesos, articulaciones o músculos.'],d:['Needs regular treatment such as injections for arthritis— back, neck issues, knee, shoulder, ankle food or joint replacement problems, arthritis or similar; therapy prior to joint replacement , Musculoskeletal Disorders, such as but not limited to, sciatica, osteoporosis, cervical/neck/back disorder (including any type of injection or procedure), Muscular Dystrophy, Cerebral Palsy, dermatomyositis, compartment syndrome','Necesita tratamiento regular, como inyecciones para la artritis; problemas de espalda, cuello, rodilla, hombro, tobillo, pie o de reemplazo de articulaciones, artritis o similares; terapia antes de un reemplazo de articulación; trastornos musculoesqueléticos como, entre otros, ciática, osteoporosis, trastornos cervicales, de cuello o de espalda (incluido cualquier tipo de inyección o procedimiento), distrofia muscular, parálisis cerebral, dermatomiositis, síndrome compartimental']},
+  {t:['Substance use disorder.','Trastorno por consumo de sustancias.'],d:['Alcohol or drug dependency, treated or not.','Dependencia del alcohol o de drogas, con o sin tratamiento.']},
+  {t:['Type 1 diabetes.','Diabetes tipo 1.'],d:['Including if diagnosed as an adult (sometimes called LADA) — or you use an insulin pump.','Incluso si se diagnosticó en la edad adulta (a veces llamada LADA), o usa una bomba de insulina.'],rx:1},
+  {t:['Major surgery.','Cirugía mayor.'],d:['In the last 5 years with ongoing care, or planned in the next 12 months.','En los últimos 5 años con atención continua, o planificada en los próximos 12 meses.']},
+  {t:['Brain or nerve disorder.','Trastorno cerebral o de los nervios.'],d:["Parkinson's, epilepsy, stroke, dementia, ALS, or similar.",'Parkinson, epilepsia, derrame cerebral, demencia, ELA o similares.']},
+  {t:['Mental health condition.','Condición de salud mental.'],d:['Schizophrenia, bipolar disorder, major depression, or anxiety needing ongoing care — or 2+ regular medications for it.','Esquizofrenia, trastorno bipolar, depresión mayor o ansiedad que requiere atención continua, o 2 o más medicamentos regulares para ello.'],ex:['Examples: lithium, clozapine.','Ejemplos: litio, clozapina.'],rx:1},
+  {t:['Urological or gynecological condition.','Condición urológica o ginecológica.'],d:["Endometriosis, uterine fibroids, or Peyronie's disease.",'Endometriosis, fibromas uterinos o enfermedad de Peyronie.']},
+  {t:['Skin condition.','Condición de la piel.'],d:['A wound or surgical site needing ongoing care, psoriasis, or skin cancer.','Una herida o sitio quirúrgico que necesita atención continua, psoriasis o cáncer de piel.'],note:["Basal cell carcinoma doesn't count.",'El carcinoma de células basales no cuenta.']}
+ ]}
 ];
 
 /* ===== Plans (rates from carrier SBCs) — columns: [Individual, +Spouse, +Child(ren), Family] by age band 18-29, 30-44, 45-54, 55-64 ===== */
@@ -432,12 +471,13 @@ function renderQuestions(){
   const keep={};document.querySelectorAll('#qbox input:checked').forEach(r=>keep[r.name]=r.value);
   $('draftNote').hidden=!DRAFT_QUESTIONS;
   const li=LANG==='es'?1:0;
-  $('qbox').innerHTML=PARTS.map(p=>`<div class="part"><h3><span>${t('part')} ${p.id}</span>${esc(p.title[li])}</h3>
-    ${p.qs.map((q,i)=>{const n='q'+p.id+i;return `<div class="q"><p>${esc(q[li])}</p><div class="yn" role="radiogroup" aria-label="${t('part')} ${p.id} ${i+1}">
+  const rules=`<div class="qrules"><b>${t('rulesH')}</b><ul>${Q_RULES.map(r=>`<li>${esc(r[li])}</li>`).join('')}</ul><span>${t('rulesParts')}</span></div>`;
+  $('qbox').innerHTML=rules+PARTS.map(p=>`<div class="part"><h3><span>${t('part')} ${p.id}</span>${esc(p.title[li])}</h3><p class="fine" style="margin:0">${esc(p.sub[li])}</p>
+    ${p.qs.map((q,i)=>{const n='q'+p.id+i;return `<div class="q"><p><b>${esc(q.t[li])}</b>${q.d?' '+esc(q.d[li]):''}${q.ex?` <span class="qex">${esc(q.ex[li])}</span>`:''}${q.note?` <span class="qnote">${esc(q.note[li])}</span>`:''}${q.rx?' <span class="rx" title="'+esc(t('rxTip'))+'">Rx</span>':''}</p><div class="yn" role="radiogroup" aria-label="${t('part')} ${p.id} ${i+1}">
       <label><input type="radio" name="${n}" value="yes"${keep[n]==='yes'?' checked':''}>${t('yes')}</label><label><input type="radio" name="${n}" value="no"${keep[n]==='no'?' checked':''}>${t('no')}</label></div></div>`}).join('')}</div>`).join('');
 }
 $('back1').onclick=()=>go(1);
-function answers(){const out=[];PARTS.forEach(p=>p.qs.forEach((q,i)=>{const c=document.querySelector(`input[name="q${p.id}${i}"]:checked`);out.push({part:p.id,n:i+1,q:q[0],a:c?c.value:null})}));return out}
+function answers(){const out=[];PARTS.forEach(p=>p.qs.forEach((q,i)=>{const c=document.querySelector(`input[name="q${p.id}${i}"]:checked`);out.push({part:p.id,n:i+1,q:q.t[0].replace(/\.$/,''),a:c?c.value:null})}));return out}
 $('s2').addEventListener('submit',e=>{e.preventDefault();const a=answers();
   if(a.some(x=>!x.a)){showErr('err2','err2');return}
   $('err2').hidden=true;senior=false;showSubmit()});
@@ -520,7 +560,7 @@ function fmtDate(v){return v?new Date(v+'T12:00').toLocaleDateString(LANG==='es'
 /* Summary: English with route for the agent (email/sheet); client's language without route for the review screen */
 function summary(L,forAgent){
   const R=k=>t(k,null,L),a=answers();
-  const qText=(x)=>{const p=PARTS.find(p=>p.id===x.part);return p.qs[x.n-1][L==='es'?1:0]};
+  const qText=(x)=>{const p=PARTS.find(p=>p.id===x.part);return p.qs[x.n-1].t[L==='es'?1:0].replace(/\.$/,'')};
   const yn=v=>v==='yes'?T[L].yes.toUpperCase():T[L].no.toUpperCase();
   return (forAgent?`EMPOWER QUOTE REQUEST\nRoute: ${route()}\n\n`:'')+
    `${R('rv_name')}: ${$('name').value.trim()}\n${R('rv_dob')}: ${$('dob').value}\n${R('rv_email')}: ${$('email').value.trim()}\n${R('rv_phone')}: ${$('phone').value.trim()}\n${R('rv_zip')}: ${$('zip').value}\n${R('rv_state')}: ${$('state').value}\n${R('rv_start')}: ${$('eff').value}\n${R('rv_ref')}: ${$('referral').value.trim()||'—'}\n${R('rv_lang')}: ${L==='en'?(LANG==='es'?'Spanish':'English'):T[LANG].langName}\n${R('rv_perm')}\n`+
