@@ -334,7 +334,7 @@ const VARS=()=>({first:esc(FIRST),name:esc(CFG.name),email:esc(AGENT_EMAIL)});
 function t(k,v,L){const d=T[L||LANG];let s=d[k]!==undefined?d[k]:T.en[k];if(typeof s!=='string')return s;const all=Object.assign(VARS(),v||{});return s.replace(/\{(\w+)\}/g,(_,x)=>all[x]!==undefined?all[x]:'')}
 const L2=(en,es)=>LANG==='es'?es:en;   // inline pair helper for plan data
 
-/* ===== Health questions: Bright Life Health History Disclosure Form (9.14.26), Parts A, B and C as written ===== */
+/* ===== Health questions: Health Shield Health History Disclosure Form (9.14.26), Parts A, B and C as written ===== */
 /* Each question: t = bold title, d = description, ex = examples, note = small note, rx = orange Rx tag. [English, Spanish] */
 const DRAFT_QUESTIONS=false;
 const Q_RULES=[
@@ -385,11 +385,11 @@ const PARTS=[
 /* ===== Plans (rates from carrier SBCs) — columns: [Individual, +Spouse, +Child(ren), Family] by age band 18-29, 30-44, 45-54, 55-64 ===== */
 /* rows: [label EN, label ES, value EN, value ES] */
 const HEALTHY=[
- {carrier:'Bright Life',name:'VL 1500',tag:'tagLowest',rates:[[309,589,579,849],[339,644,629,909],[389,714,699,979],[399,764,749,1009]],doc:'vl1500',
+ {carrier:'Health Shield',name:'VL 1500',tag:'tagLowest',rates:[[309,589,579,849],[339,644,629,909],[389,714,699,979],[399,764,749,1009]],doc:'vl1500',
   rows:[['Deductible','Deducible','$1,500','$1,500'],['Doctor visits','Consultas médicas','$50 copay (10/yr)','$50 de copago (10/año)'],['Generic Rx','Medicamentos genéricos','$0','$0'],['Network','Red','PHCS','PHCS']]},
- {carrier:'Bright Life',name:'PPO 1250',tag:'tagBalance',rates:[[389,729,719,1029],[409,769,759,1059],[429,829,819,1129],[459,849,829,1169]],doc:'ppo1250',
+ {carrier:'Health Shield',name:'PPO 1250',tag:'tagBalance',rates:[[389,729,719,1029],[409,769,759,1059],[429,829,819,1129],[459,849,829,1169]],doc:'ppo1250',
   rows:[['Deductible','Deducible','$1,250','$1,250'],['Doctor visits','Consultas médicas','$50 PCP · $75 specialist','$50 médico primario · $75 especialista'],['Generic Rx','Medicamentos genéricos','$0','$0'],['Network','Red','Cigna PPO','Cigna PPO']]},
- {carrier:'Bright Life',name:'MM 5300',tag:'tagMajor',rates:[[614,1089,984,1479],[634,1119,1024,1539],[654,1179,1064,1599],[684,1269,1134,1729]],doc:'mm5300',
+ {carrier:'Health Shield',name:'MM 5300',tag:'tagMajor',rates:[[614,1089,984,1479],[634,1119,1024,1539],[654,1179,1064,1599],[684,1269,1134,1729]],doc:'mm5300',
   rows:[['Deductible','Deducible','$5,300','$5,300'],['Doctor visits','Consultas médicas','$50 PCP · $60 specialist','$50 médico primario · $60 especialista'],['Rx','Medicamentos','$10 generic · $90 brand · GLP-1 covered','$10 genérico · $90 de marca · cubre GLP-1'],['Network','Red','Cigna PPO','Cigna PPO']]}
 ];
 const AFC_AGES=[20,25,30,35,40,45,50,55,60,64];
@@ -481,7 +481,7 @@ function answers(){const out=[];PARTS.forEach(p=>p.qs.forEach((q,i)=>{const c=do
 $('s2').addEventListener('submit',e=>{e.preventDefault();const a=answers();
   if(a.some(x=>!x.a)){showErr('err2','err2');return}
   $('err2').hidden=true;senior=false;showSubmit()});
-function route(){return senior?'MEDICARE (65+): offer Amaze Health + Medicare review':answers().some(x=>x.a==='yes')?'AMERIBENEFIT (answered YES to a health question)':'PREFERRED (all NO): Bright Life + Manhattan Life'}
+function route(){return senior?'MEDICARE (65+): offer Amaze Health + Medicare review':answers().some(x=>x.a==='yes')?'AMERIBENEFIT (answered YES to a health question)':'PREFERRED (all NO): Health Shield + Manhattan Life'}
 
 /* ===== Submit: Google page (google.script.run), GitHub page (fetch to /exec), or email link ===== */
 const MODE=window.EXEC_URL?'fetch':(window.google&&google.script&&google.script.run)?'gas':'mail';
